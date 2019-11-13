@@ -32,11 +32,19 @@ class messageActor(out: ActorRef) extends Actor {
 //      val jsonString = """{
 //      "hits": "hiiiiiiiiiiiiii"
 //      }"""
+      val stockID = (jsMsg \ "stockID").as[String]
       val stock: Stock = new Stock()
-      val stockVal = stock.getStockVal("LUV")
-      val msg = f"""{ "stockVal": $stockVal }"""
+      val stockVal = stock.getStockVal(stockID)
+
+      val json: JsValue = JsObject(Seq(
+        "stockID" -> JsString(stockID),
+        "stockVal" -> JsNumber(stockVal)
+      ))
+
+      //val msg = f"""{ "stockVal": $stockVal }"""
       //val s = """{ "stockVal": %d }""".format(stockVal)
-      out ! Json.parse(msg)
+//      out ! Json.parse(msg)
+      out ! json
     case msg: String =>
       out ! ("I received your message: " + msg)
   }

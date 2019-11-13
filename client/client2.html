@@ -36,7 +36,7 @@
             var text = document.getElementById("userinput").value;
             var msg = {
               userId: 123456,
-              msg: text
+              stockID: text
             };
 
             webSocket.send(JSON.stringify(msg));
