@@ -5,6 +5,8 @@ import play.api.mvc._
 import services.Counter
 import yahoofinance.{Stock, YahooFinance}
 
+import java.math.BigDecimal
+
 /**
  * This controller demonstrates how to use dependency injection to
  * bind a component into a controller class. The class creates an
@@ -21,7 +23,6 @@ class StockController @Inject()(cc: ControllerComponents,
    * `GET /count` requests by an entry in the `routes` config file.
    */
 
-  import java.math.BigDecimal
 
   val stock: Stock = YahooFinance.get("LUV")
 
