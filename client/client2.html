@@ -7,6 +7,7 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
 <script type="text/javascript">
         var webSocket = new WebSocket('ws://localhost:9000/ws');
+        var stockIds = []
 
         webSocket.onerror = function(event) {
             onError(event)
@@ -33,14 +34,14 @@
         }
 
         function start() {
-            var text = document.getElementById("userinput").value;
+            var stockId = document.getElementById("stock").value;
             var msg = {
-              userId: 123456,
-              stockID: text
+              userID: "123456",
+              action: "addStock",
+              stockID: stockId
             };
 
             webSocket.send(JSON.stringify(msg));
-            //webSocket.send(text);
             return false;
         }
 </script>
@@ -65,7 +66,7 @@
 <body>
 
 <div>
-  <input type="text" id="userinput" /> <br> <input type="submit"
+  <input type="text" id="stock" /> <br> <input type="submit"
      value="Send Message to Server" onclick="start()" />
 </div>
 <div id="messages"></div>

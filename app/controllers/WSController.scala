@@ -10,6 +10,7 @@ import play.api.mvc.WebSocket.MessageFlowTransformer
 import play.api.libs.json._
 import akka.actor._
 import services.Stock
+import scala.collection._
 
 class WSController @Inject()(cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer)
   extends AbstractController(cc) {
@@ -26,29 +27,69 @@ object messageActor {
 }
 
 class messageActor(out: ActorRef) extends Actor {
+  val stockList = mutable.MutableList[Stock]()
 
   override def receive: Receive = {
     case jsMsg: JsValue =>
-//      val jsonString = """{
-//      "hits": "hiiiiiiiiiiiiii"
-//      }"""
-      val stockID = (jsMsg \ "stockID").as[String]
-      val stock: Stock = new Stock()
-      val stockVal = stock.getStockVal(stockID)
+      var jsonOut: JsValue = null
+      val userID: String = (jsMsg \ "userID").as[String]
+      val action: String = (jsMsg \ "action").as[String]
+      if (action.equalsIgnoreCase("addStock")) {
+        val stockID: String = (jsMsg \ "stockID").as[String]
+        val stock: Stock = new Stock(stockID)
+        if (!stock.isValidStock()) {
+          jsonOut = JsObject(Seq("error" -> JsString("Invalid stockID")))
+        } else {
+          stockList += stock
+          val stockVal = stock.getStockVal()
 
-      val json: JsValue = JsObject(Seq(
-        "stockID" -> JsString(stockID),
-        "stockVal" -> JsNumber(stockVal)
-      ))
+          jsonOut = JsObject(Seq(
+            "stockID" -> JsString(stockID),
+            "stockVal" -> JsNumber(stockVal)
+          ))
 
-      //val msg = f"""{ "stockVal": $stockVal }"""
-      //val s = """{ "stockVal": %d }""".format(stockVal)
-//      out ! Json.parse(msg)
-      out ! json
+          val system = akka.actor.ActorSystem("system")
+          import system.dispatcher
+          import scala.concurrent.duration._
+          context.system.scheduler.schedule(5 seconds, 5000.millis, self, SendLatestMessage)(context.system.dispatcher)
+        }
+      }
+      out ! jsonOut
     case msg: String =>
       out ! ("I received your message: " + msg)
+    case SendLatestMessage =>
+      var jsonOut: JsValue = null
+      var bufJson = new JsArray()
+      // TODO: Use object to dymanically build json return
+      var jsonString: String = """ { "stockIds": ["""
+      stockList.foreach(stock => {
+        println("stock" + stock.stockId)
+        var stockId = stock.stockId
+        var stockVal = stock.getStockVal()
+        jsonString += s""" {
+          "stockID": "$stockId",
+          "stockVal": $stockVal
+          },"""
+      })
+      jsonString = jsonString.dropRight(1)
+      jsonString += "] }"
+      println(jsonString)
+      jsonOut = Json.parse(jsonString);
+      out ! jsonOut
   }
 }
+case object SendLatestMessage
+//case class Message()
+//object scheduleActor {
+//  def props(out: ActorRef) = Props(new scheduleActor(out))
+//}
+//class scheduleActor(out: ActorRef) extends Actor {
+//  //def receive = { case Message() => println("Do something in actor") }
+//  override def receive: Receive = {
+//    case msg: String =>
+//    out ! ("I received your message: ")
+//  }
+//}
 
 
 //class WSController @Inject()(cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer)
