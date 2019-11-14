@@ -80,7 +80,6 @@ class messageActor(out: ActorRef) extends Actor {
       var jsonString: String = """ { "stockIds": ["""
       if (!stockList.isEmpty) {
         stockList.foreach(stock => {
-          println("stock" + stock.stockId)
           var stockId = stock.stockId
           var stockVal = stock.getStockVal()
           jsonString +=
@@ -92,42 +91,8 @@ class messageActor(out: ActorRef) extends Actor {
         jsonString = jsonString.dropRight(1)
       }
       jsonString += "] }"
-      println(jsonString)
       jsonOut = Json.parse(jsonString);
       out ! jsonOut
   }
 }
 case object SendLatestMessage
-//case class Message()
-//object scheduleActor {
-//  def props(out: ActorRef) = Props(new scheduleActor(out))
-//}
-//class scheduleActor(out: ActorRef) extends Actor {
-//  //def receive = { case Message() => println("Do something in actor") }
-//  override def receive: Receive = {
-//    case msg: String =>
-//    out ! ("I received your message: ")
-//  }
-//}
-
-
-//class WSController @Inject()(cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer)
-//  extends AbstractController(cc) {
-//
-//  def socket = WebSocket.accept[String, String] { request =>
-//    ActorFlow.actorRef { out =>
-//      MyWebSocketActor.props(out)
-//    }
-//  }
-//}
-//
-//object MyWebSocketActor {
-//  def props(out: ActorRef) = Props(new MyWebSocketActor(out))
-//}
-//
-//class MyWebSocketActor(out: ActorRef) extends Actor {
-//  def receive = {
-//    case msg: String =>
-//      out ! ("I received your message: " + msg)
-//  }
-//}

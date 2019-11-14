@@ -6,6 +6,7 @@ import yahoofinance.{Stock, YahooFinance}
 import java.math.BigDecimal
 
 class Stock(val stockId: String) {
+  //TODO : utilize dependency injection to inject the yahoo finance
     def isValidStock() : Boolean = {
       try {
         val stock: yahoofinance.Stock = YahooFinance.get(stockId)
