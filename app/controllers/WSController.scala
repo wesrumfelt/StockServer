@@ -6,11 +6,12 @@ import javax.inject.Inject
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import play.api.libs.json.JsValue
-import play.api.mvc.WebSocket.MessageFlowTransformer
 import play.api.libs.json._
 import akka.actor._
 import services.Stock
 import scala.collection._
+import scala.concurrent.duration._
+import play.api.Logger
 
 class WSController @Inject()(cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer)
   extends AbstractController(cc) {
@@ -27,15 +28,15 @@ object messageActor {
 }
 
 class messageActor(out: ActorRef) extends Actor {
-  val stockList = mutable.MutableList[Stock]()
+  var stockList = mutable.ListBuffer[Stock]()
 
   override def receive: Receive = {
     case jsMsg: JsValue =>
       var jsonOut: JsValue = null
-      val userID: String = (jsMsg \ "userID").as[String]
+      val userID: String = (jsMsg \ "userId").as[String]
       val action: String = (jsMsg \ "action").as[String]
       if (action.equalsIgnoreCase("addStock")) {
-        val stockID: String = (jsMsg \ "stockID").as[String]
+        val stockID: String = (jsMsg \ "stockId").as[String]
         val stock: Stock = new Stock(stockID)
         if (!stock.isValidStock()) {
           jsonOut = JsObject(Seq("error" -> JsString("Invalid stockID")))
@@ -44,15 +45,29 @@ class messageActor(out: ActorRef) extends Actor {
           val stockVal = stock.getStockVal()
 
           jsonOut = JsObject(Seq(
-            "stockID" -> JsString(stockID),
+            "stockId" -> JsString(stockID),
             "stockVal" -> JsNumber(stockVal)
           ))
 
           val system = akka.actor.ActorSystem("system")
-          import system.dispatcher
-          import scala.concurrent.duration._
           context.system.scheduler.schedule(5 seconds, 5000.millis, self, SendLatestMessage)(context.system.dispatcher)
         }
+      } else if (action.equalsIgnoreCase("removeStock")) {
+        val stockID: String = (jsMsg \ "stockID").as[String]
+        val newStockList = mutable.ListBuffer[Stock]()
+        // filter doesn't seem to be allowed for a List of objects
+        stockList.foreach(stock => {
+          if (stockID != stock.stockId) {
+            newStockList += stock
+          }
+        })
+        stockList = newStockList;
+        jsonOut = JsObject(Seq(
+          "stockID" -> JsString(stockID),
+          "status" -> JsString("removed")
+        ))
+      } else {
+        jsonOut = JsObject(Seq("error" -> JsString("Unknown action")))
       }
       out ! jsonOut
     case msg: String =>
@@ -62,16 +77,19 @@ class messageActor(out: ActorRef) extends Actor {
       var bufJson = new JsArray()
       // TODO: Use object to dymanically build json return
       var jsonString: String = """ { "stockIds": ["""
-      stockList.foreach(stock => {
-        println("stock" + stock.stockId)
-        var stockId = stock.stockId
-        var stockVal = stock.getStockVal()
-        jsonString += s""" {
-          "stockID": "$stockId",
+      if (!stockList.isEmpty) {
+        stockList.foreach(stock => {
+          println("stock" + stock.stockId)
+          var stockId = stock.stockId
+          var stockVal = stock.getStockVal()
+          jsonString +=
+            s""" {
+          "stockId": "$stockId",
           "stockVal": $stockVal
           },"""
-      })
-      jsonString = jsonString.dropRight(1)
+        })
+        jsonString = jsonString.dropRight(1)
+      }
       jsonString += "] }"
       println(jsonString)
       jsonOut = Json.parse(jsonString);

@@ -9,13 +9,13 @@ class Stock(val stockId: String) {
     def isValidStock() : Boolean = {
       try {
         val stock: yahoofinance.Stock = YahooFinance.get(stockId)
-        return true
       } catch {
         case x: FileNotFoundException => {
           println("Exception: Stock not found")
         }
         return false
       }
+      return true
     }
     def getStockVal() : BigDecimal = {
       val stock: yahoofinance.Stock = YahooFinance.get(stockId)
