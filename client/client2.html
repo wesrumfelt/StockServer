@@ -26,9 +26,12 @@
     document.getElementById('stocks').innerHTML = '';
     if (jsonObj.stockIds) {
       jsonObj.stockIds.forEach(function(stock) {
-        document.getElementById('stocks').innerHTML += '<br />' + stock.stockId + ' ' + stock.stockVal;
- //document.getElementById('messages').innerHTML += '<br />'                    + event.data
+        document.getElementById('stocks').innerHTML += '<br />' + stock.stockId + ':  ' + stock.stockVal;
       });
+    } else if (jsonObj.status === "added") {
+      document.getElementById('stocks').innerHTML += '<br />Added ' + jsonObj.stockId + ':  ' + jsonObj.stockVal;
+    } else if (jsonObj.status === "removed") {
+      document.getElementById('stocks').innerHTML += '<br />Removed ' + jsonObj.stockId;
     }
   }
 

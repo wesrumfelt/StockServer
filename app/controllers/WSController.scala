@@ -36,34 +36,35 @@ class messageActor(out: ActorRef) extends Actor {
       val userID: String = (jsMsg \ "userId").as[String]
       val action: String = (jsMsg \ "action").as[String]
       if (action.equalsIgnoreCase("addStock")) {
-        val stockID: String = (jsMsg \ "stockId").as[String]
-        val stock: Stock = new Stock(stockID)
+        val stockId: String = (jsMsg \ "stockId").as[String]
+        val stock: Stock = new Stock(stockId)
         if (!stock.isValidStock()) {
-          jsonOut = JsObject(Seq("error" -> JsString("Invalid stockID")))
+          jsonOut = JsObject(Seq("error" -> JsString("Invalid stockId")))
         } else {
           stockList += stock
           val stockVal = stock.getStockVal()
 
           jsonOut = JsObject(Seq(
-            "stockId" -> JsString(stockID),
-            "stockVal" -> JsNumber(stockVal)
+            "stockId" -> JsString(stockId),
+            "stockVal" -> JsNumber(stockVal),
+            "status" -> JsString("added")
           ))
 
           val system = akka.actor.ActorSystem("system")
           context.system.scheduler.schedule(5 seconds, 5000.millis, self, SendLatestMessage)(context.system.dispatcher)
         }
       } else if (action.equalsIgnoreCase("removeStock")) {
-        val stockID: String = (jsMsg \ "stockID").as[String]
+        val stockId: String = (jsMsg \ "stockId").as[String]
         val newStockList = mutable.ListBuffer[Stock]()
         // filter doesn't seem to be allowed for a List of objects
         stockList.foreach(stock => {
-          if (stockID != stock.stockId) {
+          if (stockId != stock.stockId) {
             newStockList += stock
           }
         })
         stockList = newStockList;
         jsonOut = JsObject(Seq(
-          "stockID" -> JsString(stockID),
+          "stockId" -> JsString(stockId),
           "status" -> JsString("removed")
         ))
       } else {
