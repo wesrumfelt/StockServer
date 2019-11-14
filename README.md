@@ -8,7 +8,7 @@ or
 
 2) Run standalone with sbt
 
-`%> \path\to\java.exe -Dfile.encoding=UTF8 -Djline.terminal=none -Dsbt.log.noformat=true -Dsbt.global.base=C:\Users\wes\AppData\Local\Temp\sbt-global-plugin2stub -Xms512M -Xmx1024M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M -classpath \path\to\sbt-launch.jar xsbt.boot.Boot "project stockserver" run`
+`%> \path\to\java.exe -Dfile.encoding=UTF8 -Djline.terminal=none -Dsbt.log.noformat=true -Dsbt.global.base=\path\to\sbt-global-plugin2stub -Xms512M -Xmx1024M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M -classpath \path\to\sbt-launch.jar xsbt.boot.Boot "project stockserver" run`
 
 ## Run client
 1) Open StockServer\client\client.html
