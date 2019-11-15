@@ -38,7 +38,17 @@ class messageActor(out: ActorRef) extends Actor {
       if (action.equalsIgnoreCase("addStock")) {
         val stockId: String = (jsMsg \ "stockId").as[String]
         val stock: Stock = new Stock(stockId)
-        if (!stock.isValidStock()) {
+        // Check and see if stock has already been added
+        var exists: Boolean = false
+        stockList.foreach(stock => {
+          if (stockId == stock.stockId) {
+            exists = true
+          }
+        })
+        // Check and make sure it is a valid stock Id
+        if (exists) {
+          jsonOut = JsObject(Seq("error" -> JsString("Stock stockId already added")))
+        } else if (!stock.isValidStock()) {
           jsonOut = JsObject(Seq("error" -> JsString("Invalid stockId")))
         } else {
           stockList += stock
