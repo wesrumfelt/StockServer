@@ -13,4 +13,4 @@ or
 ## Run client
 1) Open StockServer\client\client.html
 
-This is a simple javascript/html client implimentaion that will connect to the StockerServer running at localhost:9000 via websocket. The user can add/remove stocks from a watchlist that will receive periodic stock prices in real-time through the websocket.
+This is a simple javascript/html client implimentaion that will connect to the StockerServer running at localhost:9000 via websocket. The user can add/remove stocks from a watchlist that will receive periodic stock prices in real-time through the websocket (although the stock market needs to be open to see much happening in the client with price changes)
